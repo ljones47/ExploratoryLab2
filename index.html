@@ -106,16 +106,7 @@
 
     map.on('click', async function () {
 
-    const responseTransit = await fetch(`https://api.geoapify.com/v1/isoline?lat=${latInput}&lon=${longInput}&type=time&mode=transit&range=${numberEntry}&traffic=approximated&apiKey=383e9d8600914a2a9f44d28f043222c4`); 
-    const isolineTransitGeoJSON = await responseTransit.json();
-    console.log(isolineTransitGeoJSON);
-    globalTransitIsochrone = isolineTransitGeoJSON;
-
-    const responseCar = await fetch(`https://api.geoapify.com/v1/isoline?lat=${latInput}&lon=${longInput}&type=time&mode=drive&range=${numberEntry}&traffic=approximated&apiKey=383e9d8600914a2a9f44d28f043222c4`); 
-    const isolineCarGeoJSON = await responseCar.json();
-    globalCarIsochrone = isolineCarGeoJSON;
-
-    if (map.getLayer('isoline-line-transit')) {
+     if (map.getLayer('isoline-line-transit')) {
         map.removeLayer('isoline-line-transit');
         }
     if (map.getLayer('isoline-fill-transit')) {
@@ -133,6 +124,45 @@
     if (map.getSource('isoline-data-source-car')) {
         map.removeSource('isoline-data-source-car');
         }
+    if (map.getLayer('transit-proximity')) {
+        map.removeLayer('transit-proximity')
+        };
+    if (map.getSource('points-transit-proximity')) {
+        map.removeSource('points-transit-proximity')
+        };
+    if (map.getLayer('car-proximity')) {
+        map.removeLayer('car-proximity')
+        };
+    if (map.getSource('points-car-proximity')) {
+        map.removeSource('points-car-proximity')
+        };
+    if (map.getLayer('libraries-transit-proximity')) {
+        map.removeLayer('libraries-transit-proximity')
+        };
+    if (map.getSource('libraries-transit-proximity')) {
+        map.removeSource('libraries-transit-proximity')
+        };
+    if (map.getLayer('libraries-proximity')) {
+        map.removeLayer('libraries-proximity')
+        };
+    if (map.getSource('libraries-car-proximity')) {
+        map.removeSource('libraries-car-proximity')
+        };
+    if (map.getLayer('bus-routes-2')) {
+        map.removeLayer('bus-routes-2')
+        };
+    if (map.getLayer('bus-stops-2')) {
+        map.removeLayer('bus-stops-2')
+        };
+
+    const responseTransit = await fetch(`https://api.geoapify.com/v1/isoline?lat=${latInput}&lon=${longInput}&type=time&mode=transit&range=${numberEntry}&traffic=approximated&apiKey=383e9d8600914a2a9f44d28f043222c4`); 
+    const isolineTransitGeoJSON = await responseTransit.json();
+    console.log(isolineTransitGeoJSON);
+    globalTransitIsochrone = isolineTransitGeoJSON;
+
+    const responseCar = await fetch(`https://api.geoapify.com/v1/isoline?lat=${latInput}&lon=${longInput}&type=time&mode=drive&range=${numberEntry}&traffic=approximated&apiKey=383e9d8600914a2a9f44d28f043222c4`); 
+    const isolineCarGeoJSON = await responseCar.json();
+    globalCarIsochrone = isolineCarGeoJSON;
 
     map.addSource('isoline-data-source', {
         type: "geojson",
@@ -147,8 +177,8 @@
          paint: {
             "line-color": '#3879ff',
             "line-width": 1.7,
-         },
-        },
+         }},
+        "highway_name_other",
     );
     map.addLayer({
         id: `isoline-fill-transit`,
@@ -158,7 +188,8 @@
             "fill-color": '#78ddff',
             "fill-opacity": 0.6,
             },
-        })
+        },
+        "highway_name_other")
 
     map.addSource('isoline-data-source-car', {
         type: "geojson",
@@ -175,6 +206,7 @@
             "line-width": 1.5,
             }
         },
+        "highway_name_other"
     );
     map.addLayer({
         id: 'isoline-fill-car',
@@ -184,19 +216,8 @@
             "fill-color": '#ffb477',
             "fill-opacity": 0.3,
             },
-        })
-
-        map.on('click', function (e) {
-            if (map.getLayer('bus-routes-2')) {
-                map.removeLayer('bus-routes-2')
-            };
-            if (map.getLayer('bus-stops-2')) {
-                map.removeLayer('bus-stops-2')
-            };
-            /*if (map.getSource('bus-routes-source')) {
-                map.removeSource('bus-routes-source')
-            };*/
-        })
+        },
+        "highway_name_other")
 
         // putting routes here as well so they overlay on top of polygons
         map.addLayer({
@@ -228,7 +249,8 @@
                     301773, 2,
                     1.2]
             }
-        })
+        },
+        "highway_name_other")
 
         map.addLayer({
             id: 'bus-stops-2',
@@ -259,7 +281,8 @@
                     0.5,
                     ],
         }
-        })
+        },
+        "highway_name_other")
 
         // from day 15 trees example (modified) - transit isochrone overlap
         const response = await fetch('https://ljones47.github.io/ExploratoryLab2/Hospitals_metrovan.geojson');
@@ -297,7 +320,8 @@
             paint: {
                 'icon-opacity': 1
                 }
-        })
+        },
+        "highway_name_other")
 
         // car hospital overlap
         const pointsInProximityC = turf.pointsWithinPolygon(hospital, globalCarIsochrone);
@@ -330,7 +354,8 @@
             paint: {
                 'icon-opacity': 1
                 }
-        })
+        },
+        "highway_name_other")
 
         const responseLibrary = await fetch('https://ljones47.github.io/ExploratoryLab2/MetroVan_libraries.geojson');
         const library = await responseLibrary.json();
@@ -360,7 +385,8 @@
                     8,
                     ],
                 },
-        })
+        },
+        "highway_name_other")
 
         // car library overlap
         const librariesInProximityC = turf.pointsWithinPolygon(library, globalCarIsochrone);
@@ -388,34 +414,8 @@
                     8,
                     ],
                 },
-        })
-        // day 15 slides
-        map.on('click', function (e) {
-            if (map.getLayer('transit-proximity')) {
-                map.removeLayer('transit-proximity')
-            };
-            if (map.getSource('points-transit-proximity')) {
-                map.removeSource('points-transit-proximity')
-            };
-            if (map.getLayer('car-proximity')) {
-                map.removeLayer('car-proximity')
-            };
-            if (map.getSource('points-car-proximity')) {
-                map.removeSource('points-car-proximity')
-            };
-            if (map.getLayer('libraries-transit-proximity')) {
-                map.removeLayer('libraries-transit-proximity')
-            };
-            if (map.getSource('libraries-transit-proximity')) {
-                map.removeSource('libraries-transit-proximity')
-            };
-            if (map.getLayer('libraries-proximity')) {
-                map.removeLayer('libraries-proximity')
-            };
-            if (map.getSource('libraries-car-proximity')) {
-                map.removeSource('libraries-car-proximity')
-            };
-        })
+        },
+        "highway_name_other")
     });
 
     map.on('load', async function() {
@@ -457,7 +457,8 @@
                     301773, 2,
                     1.2]
             }
-        })
+        },
+        "highway_name_other")
         map.addSource('bus-stops-source', {
             type: "geojson",
             data: 'https://ljones47.github.io/ExploratoryLab2/stops.geojson',
@@ -492,7 +493,8 @@
                     0.5,
                     ],
         }
-        })
+        },
+        "highway_name_other")
     })
 
     map.on('load', async function () {
@@ -526,7 +528,8 @@
         paint: {
             'icon-opacity': 0.3
         }
-        },);
+        },
+        "highway_name_other");
 
         map.addSource('libraries-source', {
             type: "geojson",
@@ -550,7 +553,8 @@
                     8,
                     ],
                 },
-            },)
+            },
+        "highway_name_other")
     })
 
     map.on('mousemove', 'hospitals', hoverHospital);
