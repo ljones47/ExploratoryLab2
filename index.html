@@ -53,16 +53,18 @@
   <div id="map">
     <div id="controls" style="margin: 15px;">
       <span style="display: inline-block; width: 30px;"></span>
-      <input type="number" id="timeRadius" placeholder="default: 15 min">
+      <input type="number" min=0 max=60 id="timeRadius" placeholder="15">
       <button id="setTimeRadius">Set travel time (minutes)</button>
     </div>
      <div id="title">
       Travel time and access to public infrastructure by transit and car in Metro Vancouver
     <div id="legend">
-       <div><span style="width: 20px; height: 15px; background-color: rgba(120, 221, 255, 0.6); border-style: solid; border-width: 1.2px; border-color: #3879ff; display: inline-block"></span>  Distance reachable by transit</div>
+      <div><span style="width: 20px; height: 15px; background-color: rgba(120, 221, 255, 0.6); border-style: solid; border-width: 1.2px; border-color: #3879ff; display: inline-block"></span>  Distance reachable by transit</div>
       <div><span style="width: 20px; height: 15px; background-color: rgba(255, 180, 119, 0.3); border-style: solid; border-width: 1.2px; border-color: #ff9885; display: inline-block"></span>  Distance reachable by car</div>
-      <div><span style="width: 10px; height: 10px; border-radius: 10px; background-color: #747A2F; display: inline-block"></span>           Library</div>
-      <img src='https://ljones47.github.io/ExploratoryLab2/hospital_icon_w_background.png' width=17px; height=15px /></span>  Hospital</div>
+      <div><span style="width: 10px; height: 10px; border-radius: 10px; background-color: #747A2F; margin-left: 6px; margin-right: 6px; display: inline-block"></span> Library</div>
+      <div><img src='https://ljones47.github.io/ExploratoryLab2/hospital_icon_w_background.png' width=17px; height=15px style="margin-left: 2px; margin-right: 2px"/></span>  Hospital</div>
+      <div><span style="width: 20px; height: 1.2px; background-color: #77c1ff; margin-left: 6px; margin-right: 6px; display: inline-block"></span> Bus route</div>
+      <div><span style="width: 20px; height: 2px; background-color: #005DAA; margin-left: 6px; margin-right: 6px; display: inline-block"></span> Skytrain route</div>
 
 </div>
 <script type="module">
@@ -71,7 +73,7 @@
         container: 'map',                 
         center: [-122.972, 49.2356],    // [longitude, latitude]
         zoom: 10,
-        style: 'https://tiles.openfreemap.org/styles/positron'
+        style: 'https://ljones47.github.io/ExploratoryLab2/style.json'
         });
 
     window.map = map;
@@ -224,7 +226,7 @@
                     301758, 2,
                     301793, 2,
                     301773, 2,
-                    1]
+                    1.2]
             }
         })
 
@@ -416,7 +418,84 @@
         })
     });
 
-        map.on('load', async function () {
+    map.on('load', async function() {
+
+        const image = await map.loadImage('https://ljones47.github.io/ExploratoryLab2/transit_logo.png');
+        map.addImage('T', image.data);
+
+        map.addSource('bus-routes-source', {
+            type: "geojson",
+            data: 'https://ljones47.github.io/ExploratoryLab2/shapes.geojson',
+        })
+
+        map.addLayer({
+            id: `bus-routes`,
+            type: 'line',
+            source: 'bus-routes-source',
+            paint: {
+                "line-color": [
+                    "match", 
+                    ["get", "shape_id"], // shape IDs of skytrain lines since datasource doesn't differentiate bus from train
+                    301752, '#005DAA',
+                    298077, '#005DAA',
+                    298065, '#005DAA',
+                    298103, '#005DAA',
+                    301758, '#005DAA',
+                    301793, '#005DAA',
+                    301773, '#005DAA',
+                    '#77c1ff'],
+                "line-layer-opacity": 0.6,
+                "line-width": [
+                    "match", 
+                    ["get", "shape_id"],
+                    301752, 2,
+                    298077, 2,
+                    298065, 2,
+                    298103, 2,
+                    301758, 2,
+                    301793, 2,
+                    301773, 2,
+                    1.2]
+            }
+        })
+        map.addSource('bus-stops-source', {
+            type: "geojson",
+            data: 'https://ljones47.github.io/ExploratoryLab2/stops.geojson',
+        })
+
+        map.addLayer({
+            id: `bus-stops`,
+            type: 'symbol',
+            source: 'bus-stops-source',
+            minzoom: 12,
+            layout: {
+                "icon-image": 'T',
+                "icon-size":
+                    [
+                    "interpolate",
+                    ["linear"],
+                    ["zoom"],
+                    10,
+                    0.013,
+                    15,
+                    0.05,
+                    ],
+            },
+        paint: {
+            "icon-opacity": [
+                    "interpolate",
+                    ["linear"],
+                    ["zoom"],
+                    12,
+                    0.1,
+                    15,
+                    0.5,
+                    ],
+        }
+        })
+    })
+
+    map.on('load', async function () {
         const image = await map.loadImage('https://ljones47.github.io/ExploratoryLab2/hospital_icon_w_background.png');
         map.addImage('hospital_icon', image.data);
 
@@ -472,83 +551,6 @@
                     ],
                 },
             },)
-    })
-
-    map.on('load', async function() {
-
-        const image = await map.loadImage('https://ljones47.github.io/ExploratoryLab2/transit_logo.png');
-        map.addImage('T', image.data);
-
-        map.addSource('bus-routes-source', {
-            type: "geojson",
-            data: 'https://ljones47.github.io/ExploratoryLab2/shapes.geojson',
-        })
-
-        map.addLayer({
-            id: `bus-routes`,
-            type: 'line',
-            source: 'bus-routes-source',
-            paint: {
-                "line-color": [
-                    "match", 
-                    ["get", "shape_id"], // shape IDs of skytrain lines since datasource doesn't differentiate bus from train
-                    301752, '#005DAA',
-                    298077, '#005DAA',
-                    298065, '#005DAA',
-                    298103, '#005DAA',
-                    301758, '#005DAA',
-                    301793, '#005DAA',
-                    301773, '#005DAA',
-                    '#77c1ff'],
-                "line-layer-opacity": 0.6,
-                "line-width": [
-                    "match", 
-                    ["get", "shape_id"],
-                    301752, 2,
-                    298077, 2,
-                    298065, 2,
-                    298103, 2,
-                    301758, 2,
-                    301793, 2,
-                    301773, 2,
-                    1]
-            }
-        })
-        map.addSource('bus-stops-source', {
-            type: "geojson",
-            data: 'https://ljones47.github.io/ExploratoryLab2/stops.geojson',
-        })
-
-        map.addLayer({
-            id: `bus-stops`,
-            type: 'symbol',
-            source: 'bus-stops-source',
-            minzoom: 12,
-            layout: {
-                "icon-image": 'T',
-                "icon-size":
-                    [
-                    "interpolate",
-                    ["linear"],
-                    ["zoom"],
-                    10,
-                    0.013,
-                    15,
-                    0.05,
-                    ],
-            },
-        paint: {
-            "icon-opacity": [
-                    "interpolate",
-                    ["linear"],
-                    ["zoom"],
-                    12,
-                    0.1,
-                    15,
-                    0.5,
-                    ],
-        }
-        })
     })
 
     map.on('mousemove', 'hospitals', hoverHospital);
