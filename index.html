@@ -4,36 +4,138 @@
   <meta charset="utf-8">
   <title>Travel Time?</title>
   <link href="https://cdn.jsdelivr.net/npm/maplibre-gl@6.15.0/dist/maplibre-gl.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@turf/turf@7.4.0/turf.min.js"></script>
   <style> body { margin: 0; } 
   #map { position: relative; width: 100%; height: 100vh; inset: 0; } 
+  #controls {
+    position: fixed;
+    bottom: 0px;  
+    left: -20px;  
+    z-index: 100;
+  }
+    #title {
+    position: absolute;
+    top: 0;
+    left: 0;
+    margin-top: 10px;
+    margin-left: 10px;
+    background-color:rgba(254, 255, 252, 0.8);
+    box-shadow: 0 0 0 2px rgb(0 0 0 / 10%);
+    padding: 5px;
+    border-radius: 3px;
+    font-size: 1.3rem;
+    font-family: "Trebuchet MS";
+    z-index: 1000;
+}
+  #legend {
+    position: absolute;
+    left: 0px;
+    margin-top: 10px;
+    margin-left: 0px;
+    background-color:rgba(254, 255, 252, 0.8);
+    box-shadow: 0 0 0 2px rgb(0 0 0 / 10%);
+    padding: 5px;
+    border-radius: 3px;
+    font-size: 0.8rem;
+    font-family: "Trebuchet MS";
+    z-index: 1000
+  }
+  h4 {
+    margin-top: -3px;
+    margin-bottom: -3px;
+  }
+  p {
+    margin-bottom: 0px;
+  }
    </style>
 </head>
 <body>
   <div id="map">
+    <div id="controls" style="margin: 15px;">
+      <span style="display: inline-block; width: 30px;"></span>
+      <input type="number" id="timeRadius" placeholder="default: 15 min">
+      <button id="setTimeRadius">Set travel time (minutes)</button>
+    </div>
+     <div id="title">
+      Travel time and access to public infrastructure by transit and car in Metro Vancouver
+    <div id="legend">
+      <div><span style="width: 20px; height: 15px; background-color: rgba(120, 221, 255, 0.6); display: inline-block"></span>  Distance reachable by transit</div>
+      <div><span style="width: 20px; height: 15px; background-color: rgba(255, 180, 119, 0.3); display: inline-block"></span>  Distance reachable by car</div>
+      <div><span style="width: 10px; height: 10px; border-radius: 10px; background-color: #747A2F; display: inline-block"></span>           Library</div>
+      <img src='https://ljones47.github.io/ExploratoryLab2/hospital_icon_w_background.png' width=17px; height=15px /></span>  Hospital</div>
+
 </div>
 <script type="module">
     import * as maplibregl from 'https://cdn.jsdelivr.net/npm/maplibre-gl@6.15.0/dist/maplibre-gl.mjs';
     const map = new maplibregl.Map({
         container: 'map',                 
-        center: [-123.166, 49.259],    // [longitude, latitude]
+        center: [-122.972, 49.2356],    // [longitude, latitude]
         zoom: 10,
         style: 'https://tiles.openfreemap.org/styles/positron'
         });
 
     window.map = map;
+    
+    var numberEntry = 900; 
 
-    const responseTransit = await fetch(`https://api.geoapify.com/v1/isoline?lat=49.259&lon=-123.166&type=time&mode=transit&range=900&apiKey=383e9d8600914a2a9f44d28f043222c4`);
+    map.on('load', function () {
+        const setTimeButton = document.getElementById('setTimeRadius');
+        setTimeButton.addEventListener('click', setRadiusFunction);
+    });
+
+    function setRadiusFunction() {
+        const boxEntry = document.getElementById('timeRadius');
+        numberEntry = boxEntry.value * 60;
+        console.log(numberEntry);
+        }
+
+    var latInput = 49.241243;
+    var longInput = -122.982874;
+
+    map.on ('click', onMapClick);
+        function onMapClick(e) {
+            console.log(e.lngLat);
+            latInput = e.lngLat.lat;
+            longInput = e.lngLat.lng;
+        }
+
+    var globalTransitIsochrone;
+    var globalCarIsochrone;
+
+    map.on('click', async function () {
+
+    const responseTransit = await fetch(`https://api.geoapify.com/v1/isoline?lat=${latInput}&lon=${longInput}&type=time&mode=transit&range=${numberEntry}&traffic=approximated&apiKey=383e9d8600914a2a9f44d28f043222c4`); 
     const isolineTransitGeoJSON = await responseTransit.json();
-
-    const responseCar = await fetch(`https://api.geoapify.com/v1/isoline?lat=49.259&lon=-123.166&type=time&mode=drive&range=900&apiKey=383e9d8600914a2a9f44d28f043222c4`);
-    const isolineCarGeoJSON = await responseCar.json();
-
-    map.on('load', () => {
     console.log(isolineTransitGeoJSON);
+    globalTransitIsochrone = isolineTransitGeoJSON;
+
+    const responseCar = await fetch(`https://api.geoapify.com/v1/isoline?lat=${latInput}&lon=${longInput}&type=time&mode=drive&range=${numberEntry}&traffic=approximated&apiKey=383e9d8600914a2a9f44d28f043222c4`); 
+    const isolineCarGeoJSON = await responseCar.json();
+    globalCarIsochrone = isolineCarGeoJSON;
+
+    if (map.getLayer('isoline-line-transit')) {
+        map.removeLayer('isoline-line-transit');
+        }
+    if (map.getLayer('isoline-fill-transit')) {
+        map.removeLayer('isoline-fill-transit');
+        }
+    if (map.getSource('isoline-data-source')) {
+        map.removeSource('isoline-data-source');
+        }
+    if (map.getLayer('isoline-line-car')) {
+        map.removeLayer('isoline-line-car');
+        }
+    if (map.getLayer('isoline-fill-car')) {
+        map.removeLayer('isoline-fill-car');
+        }
+    if (map.getSource('isoline-data-source-car')) {
+        map.removeSource('isoline-data-source-car');
+        }
 
     map.addSource('isoline-data-source', {
         type: "geojson",
         data: isolineTransitGeoJSON,
+        attribution: "Isochrones from Geoapify",
         });
 
     map.addLayer({
@@ -41,9 +143,9 @@
         type: "line",
         source: 'isoline-data-source',
          paint: {
-             "line-color": '#6666ff',
-            "line-width": 2,
-         }
+            "line-color": '#3879ff',
+            "line-width": 1.7,
+         },
         },
     );
     map.addLayer({
@@ -51,36 +153,453 @@
         type: "fill",
         source: 'isoline-data-source',
         paint: {
-            "fill-color": '#6666ff',
-            "fill-opacity": 0.3,
+            "fill-color": '#78ddff',
+            "fill-opacity": 0.6,
             },
         })
 
     map.addSource('isoline-data-source-car', {
         type: "geojson",
         data: isolineCarGeoJSON,
+        attribution: "TransLink Transit GIS Data",
         });
 
     map.addLayer({
         id: 'isoline-line-car',
         type: "line",
         source: 'isoline-data-source-car',
-         paint: {
-             "line-color": '#FFD166',
-            "line-width": 2,
-         }
+        paint: {
+            "line-color": '#ff9885',
+            "line-width": 1.5,
+            }
         },
     );
     map.addLayer({
-        id: `isoline-fill-car`,
+        id: 'isoline-fill-car',
         type: "fill",
         source: 'isoline-data-source-car',
         paint: {
-            "fill-color": '#FFD166',
+            "fill-color": '#ffb477',
             "fill-opacity": 0.3,
             },
         })
+
+        map.on('click', function (e) {
+            if (map.getLayer('bus-routes-2')) {
+                map.removeLayer('bus-routes-2')
+            };
+            if (map.getLayer('bus-stops-2')) {
+                map.removeLayer('bus-stops-2')
+            };
+            /*if (map.getSource('bus-routes-source')) {
+                map.removeSource('bus-routes-source')
+            };*/
+        })
+
+        // putting routes here as well so they overlay on top of polygons
+        map.addLayer({
+            id: 'bus-routes-2',
+            type: 'line',
+            source: 'bus-routes-source',
+            paint: {
+                "line-color": [
+                    "match", 
+                    ["get", "shape_id"], // shape IDs of skytrain lines since datasource doesn't differentiate bus from train
+                    301752, '#005DAA',
+                    298077, '#005DAA',
+                    298065, '#005DAA',
+                    298103, '#005DAA',
+                    301758, '#005DAA',
+                    301793, '#005DAA',
+                    301773, '#005DAA',
+                    '#77c1ff'],
+                "line-layer-opacity": 0.3,
+                "line-width": [
+                    "match", 
+                    ["get", "shape_id"],
+                    301752, 2,
+                    298077, 2,
+                    298065, 2,
+                    298103, 2,
+                    301758, 2,
+                    301793, 2,
+                    301773, 2,
+                    1]
+            }
+        })
+
+        map.addLayer({
+            id: 'bus-stops-2',
+            type: 'symbol',
+            source: 'bus-stops-source',
+            minzoom: 12,
+            layout: {
+                "icon-image": 'T',
+                "icon-size":
+                    [
+                    "interpolate",
+                    ["linear"],
+                    ["zoom"],
+                    10,
+                    0.013,
+                    15,
+                    0.05,
+                    ],
+            },
+        paint: {
+            "icon-opacity": [
+                    "interpolate",
+                    ["linear"],
+                    ["zoom"],
+                    12,
+                    0.1,
+                    15,
+                    0.5,
+                    ],
+        }
+        })
+
+        // from day 15 trees example (modified) - transit isochrone overlap
+        const response = await fetch('https://ljones47.github.io/ExploratoryLab2/Hospitals_metrovan.geojson');
+        // response.json() turns the response into GeoJSON that the code can use. await waits for that too.
+        const hospital = await response.json();
+
+        const pointsInProximityT = turf.pointsWithinPolygon(hospital, globalTransitIsochrone);
+
+        map.addSource('points-transit-proximity', {
+            type: "geojson",
+            data: pointsInProximityT,
+        })
+
+        map.addLayer({
+            id: 'transit-proximity',
+            type: 'symbol',
+            source: 'points-transit-proximity',
+            minzoom: 3,
+            layout: {
+                "icon-image": 'hospital_icon',
+                'icon-ignore-placement': true,
+                "icon-size":
+                    [
+                    "interpolate",
+                    ["linear"],
+                    ["zoom"],
+                    10,
+                    0.05,
+                    15,
+                    0.1,
+                    ],
+                'icon-allow-overlap': true,
+                'icon-ignore-placement': true,
+                },
+            paint: {
+                'icon-opacity': 1
+                }
+        })
+
+        // car hospital overlap
+        const pointsInProximityC = turf.pointsWithinPolygon(hospital, globalCarIsochrone);
+        
+        map.addSource('points-car-proximity', {
+            type: "geojson",
+            data: pointsInProximityC,
+        })
+
+        map.addLayer({
+            id: 'car-proximity',
+            type: 'symbol',
+            source: 'points-car-proximity',
+            minzoom: 3,
+            layout: {
+                "icon-image": 'hospital_icon',
+                "icon-size":
+                    [
+                    "interpolate",
+                    ["linear"],
+                    ["zoom"],
+                    10,
+                    0.05,
+                    15,
+                    0.1,
+                    ],
+                'icon-allow-overlap': true,
+                'icon-ignore-placement': true,
+                },
+            paint: {
+                'icon-opacity': 1
+                }
+        })
+
+        const responseLibrary = await fetch('https://ljones47.github.io/ExploratoryLab2/MetroVan_libraries.geojson');
+        const library = await responseLibrary.json();
+
+        const librariesInProximityT = turf.pointsWithinPolygon(library, globalTransitIsochrone);
+
+        map.addSource('libraries-transit-proximity', {
+            type: "geojson",
+            data: librariesInProximityT,
+        })
+
+        map.addLayer({
+            id: 'libraries-transit-proximity',
+            type: 'circle',
+            source: 'libraries-transit-proximity',
+            minzoom: 3,
+            paint: {
+                "circle-color": '#747A2F',
+                "circle-opacity": 1,
+                "circle-radius": [
+                    "interpolate",
+                    ["linear"],
+                    ["zoom"],
+                    10,
+                    5,
+                    15,
+                    8,
+                    ],
+                },
+        })
+
+        // car library overlap
+        const librariesInProximityC = turf.pointsWithinPolygon(library, globalCarIsochrone);
+        
+        map.addSource('libraries-car-proximity', {
+            type: "geojson",
+            data: librariesInProximityC,
+        })
+
+        map.addLayer({
+            id: 'libraries-proximity',
+            type: 'circle',
+            source: 'libraries-car-proximity',
+            minzoom: 3,
+            paint: {
+                "circle-color": '#747A2F',
+                "circle-opacity": 1,
+                "circle-radius": [
+                    "interpolate",
+                    ["linear"],
+                    ["zoom"],
+                    10,
+                    5,
+                    15,
+                    8,
+                    ],
+                },
+        })
+        // day 15 slides
+        map.on('click', function (e) {
+            if (map.getLayer('transit-proximity')) {
+                map.removeLayer('transit-proximity')
+            };
+            if (map.getSource('points-transit-proximity')) {
+                map.removeSource('points-transit-proximity')
+            };
+            if (map.getLayer('car-proximity')) {
+                map.removeLayer('car-proximity')
+            };
+            if (map.getSource('points-car-proximity')) {
+                map.removeSource('points-car-proximity')
+            };
+            if (map.getLayer('libraries-transit-proximity')) {
+                map.removeLayer('libraries-transit-proximity')
+            };
+            if (map.getSource('libraries-transit-proximity')) {
+                map.removeSource('libraries-transit-proximity')
+            };
+            if (map.getLayer('libraries-proximity')) {
+                map.removeLayer('libraries-proximity')
+            };
+            if (map.getSource('libraries-car-proximity')) {
+                map.removeSource('libraries-car-proximity')
+            };
+        })
     });
+
+        map.on('load', async function () {
+        const image = await map.loadImage('https://ljones47.github.io/ExploratoryLab2/hospital_icon_w_background.png');
+        map.addImage('hospital_icon', image.data);
+
+        map.addSource('hospitals-source', {
+            type: "geojson",
+            data: 'https://ljones47.github.io/ExploratoryLab2/Hospitals_metrovan.geojson',
+        });
+
+        map.addLayer({
+        id: 'hospitals',
+        type: "symbol",
+        source: 'hospitals-source',
+        layout: {
+                "icon-image": 'hospital_icon',
+                "icon-size":
+                    [
+                    "interpolate",
+                    ["linear"],
+                    ["zoom"],
+                    10,
+                    0.05,
+                    15,
+                    0.1,
+                    ],
+                'icon-allow-overlap': true,
+                'icon-ignore-placement': true,
+            },
+        paint: {
+            'icon-opacity': 0.3
+        }
+        },);
+
+        map.addSource('libraries-source', {
+            type: "geojson",
+            data: 'https://ljones47.github.io/ExploratoryLab2/MetroVan_libraries.geojson',
+        });
+
+        map.addLayer({
+            id: 'libraries',
+            type: "circle",
+            source: 'libraries-source',
+            paint: {
+                "circle-color": '#747A2F',
+                "circle-opacity": 0.3,
+                "circle-radius": [
+                    "interpolate",
+                    ["linear"],
+                    ["zoom"],
+                    10,
+                    5,
+                    15,
+                    8,
+                    ],
+                },
+            },)
+    })
+
+    map.on('load', async function() {
+
+        const image = await map.loadImage('https://ljones47.github.io/ExploratoryLab2/transit_logo.png');
+        map.addImage('T', image.data);
+
+        map.addSource('bus-routes-source', {
+            type: "geojson",
+            data: 'https://ljones47.github.io/ExploratoryLab2/shapes.geojson',
+        })
+
+        map.addLayer({
+            id: `bus-routes`,
+            type: 'line',
+            source: 'bus-routes-source',
+            paint: {
+                "line-color": [
+                    "match", 
+                    ["get", "shape_id"], // shape IDs of skytrain lines since datasource doesn't differentiate bus from train
+                    301752, '#005DAA',
+                    298077, '#005DAA',
+                    298065, '#005DAA',
+                    298103, '#005DAA',
+                    301758, '#005DAA',
+                    301793, '#005DAA',
+                    301773, '#005DAA',
+                    '#77c1ff'],
+                "line-layer-opacity": 0.6,
+                "line-width": [
+                    "match", 
+                    ["get", "shape_id"],
+                    301752, 2,
+                    298077, 2,
+                    298065, 2,
+                    298103, 2,
+                    301758, 2,
+                    301793, 2,
+                    301773, 2,
+                    1]
+            }
+        })
+        map.addSource('bus-stops-source', {
+            type: "geojson",
+            data: 'https://ljones47.github.io/ExploratoryLab2/stops.geojson',
+        })
+
+        map.addLayer({
+            id: `bus-stops`,
+            type: 'symbol',
+            source: 'bus-stops-source',
+            minzoom: 12,
+            layout: {
+                "icon-image": 'T',
+                "icon-size":
+                    [
+                    "interpolate",
+                    ["linear"],
+                    ["zoom"],
+                    10,
+                    0.013,
+                    15,
+                    0.05,
+                    ],
+            },
+        paint: {
+            "icon-opacity": [
+                    "interpolate",
+                    ["linear"],
+                    ["zoom"],
+                    12,
+                    0.1,
+                    15,
+                    0.5,
+                    ],
+        }
+        })
+    })
+
+    map.on('mousemove', 'hospitals', hoverHospital);
+    map.on('mouseleave', 'hospitals', leaveHospital);
+
+      const hoverPopup = new maplibregl.Popup({ closeButton: false });
+     /* const lngLat = map.unproject([10, 10]); */
+
+      function hoverHospital(e) {
+        const hospitalPoint = e.features[0].properties;
+        if (hospitalPoint.OBJECTID) {
+          hoverPopup.setLngLat(e.lngLat);
+          hoverPopup.setHTML(`<h4>${hospitalPoint.SV_NAME}</h4><p>Address: ${hospitalPoint.STREET_NUM}</p>`);
+          hoverPopup.addTo(map);
+        } else {
+          hoverPopup.remove();
+        }
+      }
+
+      function leaveHospital() {
+        hoverPopup.remove();
+      }
+
+    map.on('mousemove', 'libraries', hoverLibrary);
+    map.on('mouseleave', 'libraries', leaveLibrary);
+
+      const hoverPopupL = new maplibregl.Popup({ closeButton: false });
+     /* const lngLat = map.unproject([10, 10]); */
+
+      function hoverLibrary(e) {
+        const libraryPoint = e.features[0].properties;
+        if (libraryPoint.OBJECTID) {
+          hoverPopupL.setLngLat(e.lngLat);
+          hoverPopupL.setHTML(`<h4>${libraryPoint.Name}</h4><p>Address: ${libraryPoint.Address}</p>`);
+          hoverPopupL.addTo(map);
+        } else {
+          hoverPopupL.remove();
+        }
+      }
+
+      function leaveLibrary() {
+        hoverPopupL.remove();
+      }
+
+    const aboutTravelTime = document.getElementById('legend');
+
+    function writeText () {
+        const transitArea = turf.area(globalTransitIsochrone);
+        console.log(transitArea);
+        // aboutTravelTime.innerHTML = 
+      }
     </script>
 </body>
 </html>
