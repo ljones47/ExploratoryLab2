@@ -20,7 +20,7 @@
     "openmaptiles": {
       "type": "vector",
       "url": "https://api.maptiler.com/tiles/v3/tiles.json?key=MOlaJF6o1CcYhnO7JnI4"
-    },
+    }
   },
   "sprite": "https://openmaptiles.github.io/positron-gl-style/sprite",
   "glyphs": "https://api.maptiler.com/fonts/{fontstack}/{range}.pbf?key=get_your_own_OpIi9ZULNHzrESv6T2vL",
