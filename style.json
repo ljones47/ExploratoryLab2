@@ -21,14 +21,6 @@
       "type": "vector",
       "url": "https://api.maptiler.com/tiles/v3/tiles.json?key=MOlaJF6o1CcYhnO7JnI4"
     },
-    "libraries-source": {
-      "type": "geojson",
-      "url": "https://ljones47.github.io/ExploratoryLab2/MetroVan_libraries.geojson"
-    },
-    "hospitals-source": {
-      "type": "geojson",
-      "url": "https://ljones47.github.io/ExploratoryLab2/Hospitals_metrovan.geojson"
-    }
   },
   "sprite": "https://openmaptiles.github.io/positron-gl-style/sprite",
   "glyphs": "https://api.maptiler.com/fonts/{fontstack}/{range}.pbf?key=get_your_own_OpIi9ZULNHzrESv6T2vL",
