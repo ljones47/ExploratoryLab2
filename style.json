@@ -28,7 +28,7 @@
     {
       "id": "background",
       "type": "background",
-      "paint": {"background-color": "rgba(196, 192, 192, 1)"}
+      "paint": {"background-color": "rgba(196, 195, 195, 1)"}
     },
     {
       "id": "park",
@@ -46,7 +46,7 @@
       "source-layer": "water",
       "filter": ["==", "$type", "Polygon"],
       "layout": {"visibility": "visible"},
-      "paint": {"fill-color": "rgba(111, 119, 119, 1)", "fill-antialias": true}
+      "paint": {"fill-color": "rgba(111, 117, 119, 1)", "fill-antialias": true}
     },
     {
       "id": "landcover_ice_shelf",
@@ -95,15 +95,6 @@
         "fill-color": "rgba(224, 224, 224, 1)",
         "fill-opacity": {"base": 0.6, "stops": [[8, 0.8], [9, 0.6]]}
       }
-    },
-    {
-      "id": "waterway",
-      "type": "line",
-      "source": "openmaptiles",
-      "source-layer": "waterway",
-      "filter": ["==", "$type", "LineString"],
-      "layout": {"visibility": "visible"},
-      "paint": {"line-color": "hsl(195, 17%, 78%)"}
     },
     {
       "id": "water_name",
