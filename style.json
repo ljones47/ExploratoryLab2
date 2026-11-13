@@ -28,7 +28,7 @@
     {
       "id": "background",
       "type": "background",
-      "paint": {"background-color": "rgba(207, 204, 204, 1)"}
+      "paint": {"background-color": "rgba(223, 220, 220, 1)"}
     },
     {
       "id": "park",
@@ -37,7 +37,7 @@
       "source-layer": "park",
       "filter": ["==", "$type", "Polygon"],
       "layout": {"visibility": "visible"},
-      "paint": {"fill-color": "rgba(188, 198, 188, 1)"}
+      "paint": {"fill-color": "rgba(210, 218, 210, 1)"}
     },
     {
       "id": "water",
@@ -46,7 +46,7 @@
       "source-layer": "water",
       "filter": ["==", "$type", "Polygon"],
       "layout": {"visibility": "visible"},
-      "paint": {"fill-color": "rgba(111, 117, 119, 1)", "fill-antialias": true}
+      "paint": {"fill-color": "rgba(118, 126, 129, 1)", "fill-antialias": true}
     },
     {
       "id": "landcover_ice_shelf",
@@ -92,7 +92,7 @@
       ],
       "layout": {"visibility": "visible"},
       "paint": {
-        "fill-color": "rgba(216, 216, 216, 1)",
+        "fill-color": "rgba(237, 233, 233, 1)",
         "fill-opacity": {"base": 0.6, "stops": [[8, 0.8], [9, 0.6]]}
       }
     },
