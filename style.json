@@ -28,7 +28,7 @@
     {
       "id": "background",
       "type": "background",
-      "paint": {"background-color": "rgba(196, 195, 195, 1)"}
+      "paint": {"background-color": "rgba(207, 204, 204, 1)"}
     },
     {
       "id": "park",
@@ -37,7 +37,7 @@
       "source-layer": "park",
       "filter": ["==", "$type", "Polygon"],
       "layout": {"visibility": "visible"},
-      "paint": {"fill-color": "rgba(174, 179, 174, 1)"}
+      "paint": {"fill-color": "rgba(188, 198, 188, 1)"}
     },
     {
       "id": "water",
@@ -92,7 +92,7 @@
       ],
       "layout": {"visibility": "visible"},
       "paint": {
-        "fill-color": "rgba(224, 224, 224, 1)",
+        "fill-color": "rgba(216, 216, 216, 1)",
         "fill-opacity": {"base": 0.6, "stops": [[8, 0.8], [9, 0.6]]}
       }
     },
@@ -752,6 +752,7 @@
       "metadata": {"mapbox:group": "101da9f13b64a08fa4b6ac1168e89e5f"},
       "source": "openmaptiles",
       "source-layer": "place",
+      "minzoom": 12,
       "maxzoom": 15,
       "filter": ["all", ["==", "$type", "Point"], ["==", "class", "suburb"]],
       "layout": {
