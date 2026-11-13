@@ -79,7 +79,7 @@
     window.map = map;
     
     var numberEntry = 900; 
-
+    // day 14 slides
     map.on('load', function () {
         const setTimeButton = document.getElementById('setTimeRadius');
         setTimeButton.addEventListener('click', setRadiusFunction);
@@ -155,6 +155,7 @@
         map.removeLayer('bus-stops-2')
         };
 
+    // from GeoAPIfy user guide, with link modifications (advise from Dr. Bergmann)
     const responseTransit = await fetch(`https://api.geoapify.com/v1/isoline?lat=${latInput}&lon=${longInput}&type=time&mode=transit&range=${numberEntry}&traffic=approximated&apiKey=383e9d8600914a2a9f44d28f043222c4`); 
     const isolineTransitGeoJSON = await responseTransit.json();
     console.log(isolineTransitGeoJSON);
@@ -174,7 +175,7 @@
         id: 'isoline-line-transit',
         type: "line",
         source: 'isoline-data-source',
-         paint: {
+        paint: {
             "line-color": '#3879ff',
             "line-width": 1.7,
          }},
@@ -510,6 +511,7 @@
         id: 'hospitals',
         type: "symbol",
         source: 'hospitals-source',
+        attribution: 'BC Data Catalogue',
         layout: {
                 "icon-image": 'hospital_icon',
                 "icon-size":
@@ -540,6 +542,7 @@
             id: 'libraries',
             type: "circle",
             source: 'libraries-source',
+            attribution: 'City of Vancouver Data Portal',
             paint: {
                 "circle-color": '#747A2F',
                 "circle-opacity": 0.3,
@@ -557,6 +560,7 @@
         "highway_name_other")
     })
 
+    // day 14 slides
     map.on('mousemove', 'hospitals', hoverHospital);
     map.on('mouseleave', 'hospitals', leaveHospital);
 
@@ -582,7 +586,6 @@
     map.on('mouseleave', 'libraries', leaveLibrary);
 
       const hoverPopupL = new maplibregl.Popup({ closeButton: false });
-     /* const lngLat = map.unproject([10, 10]); */
 
       function hoverLibrary(e) {
         const libraryPoint = e.features[0].properties;
@@ -599,12 +602,6 @@
         hoverPopupL.remove();
       }
 
-    const aboutTravelTime = document.getElementById('legend');
-
-    function writeText () {
-        const transitArea = turf.area(globalTransitIsochrone);
-        console.log(transitArea);
-        // aboutTravelTime.innerHTML = 
       }
     </script>
 </body>
