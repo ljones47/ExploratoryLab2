@@ -505,13 +505,13 @@
         map.addSource('hospitals-source', {
             type: "geojson",
             data: 'https://ljones47.github.io/ExploratoryLab2/Hospitals_metrovan.geojson',
+            attribution: 'BC Data Catalogue',
         });
 
         map.addLayer({
         id: 'hospitals',
         type: "symbol",
         source: 'hospitals-source',
-        attribution: 'BC Data Catalogue',
         layout: {
                 "icon-image": 'hospital_icon',
                 "icon-size":
@@ -536,13 +536,13 @@
         map.addSource('libraries-source', {
             type: "geojson",
             data: 'https://ljones47.github.io/ExploratoryLab2/MetroVan_libraries.geojson',
+            attribution: 'City of Vancouver Data Portal',
         });
 
         map.addLayer({
             id: 'libraries',
             type: "circle",
             source: 'libraries-source',
-            attribution: 'City of Vancouver Data Portal',
             paint: {
                 "circle-color": '#747A2F',
                 "circle-opacity": 0.3,
