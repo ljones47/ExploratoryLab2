@@ -792,7 +792,7 @@
         "text-field": "{name:latin}\n{name:nonlatin}"
       },
       "paint": {
-        "text-color": "rgb(117, 129, 145)",
+        "text-color": "rgba(52, 60, 67, 1)",
         "text-halo-color": "rgb(242,243,240)",
         "text-halo-width": 1,
         "text-halo-blur": 1,
